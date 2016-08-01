@@ -45,7 +45,7 @@ Backend Game Logic:
 - [ ] Multiple players
   - [ ] Hot Seat Multiplayer
   - [ ] AI Players
-- [ ]New Game Rules
+- [ ] New Game Rules
   - [ ] Double Down    
   - [ ] Split Resplit
   - [ ] Insurance
