@@ -47,7 +47,7 @@ Backend Game Logic:
   - [ ] AI Players
 - [ ] New Game Rules
   - [ ] Double Down    
-  - [ ] Split Resplit
+  - [ ] Split/Resplit
   - [ ] Insurance
 - [ ] The artifact produced is properly licensed, preferably with the [MIT license][mit-license].
 
