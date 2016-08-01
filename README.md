@@ -1,27 +1,18 @@
 ## Description
 
-Complete basic and advanced JavaScript Training on TreeHouse and FreeCodeCamp.
-Then create a text based Blackjack game.
+Extend the functionality of the BlackJack game created by Yaseen & Harman
+Include betting and more complex casino rules of blackjack.
 
 ## Context
 
-Do you feel like you are not able to effectively communicate with your team mates on your project? Ever wanted to become a great JavaScript developer?
-
-Well now you can get an AWESOME, SOLID FOUNDATION to help you with this journey. This one week long cycle will OVERLOAD and EXPAND your MIND. This project will allow you to have a better understanding of all future javascript goals.
+Extending the functionality of an existing repo will give us the opportunity to expand our horizons.  We will have to integrate with existing code base, and make new features which are compatible.
 
 ## Specifications
 
-Javascript Tutorials:
-- [x] Programming Step-by-Step: Object-Oriented JavaScript
-- [x] JavaScript Basics
-- [x] JavaScript Loops, Arrays and Objects
+## Existing features
 
 Blackjack:
 - [x] Dealer and Player characters
-
-Tutorial:
-- [ ] Create Tutorial on How to Create Blackjack Game
-
 Dealer Logic:
 - [x] Dealer gives out cards in specific order
      - [x] Dealer gives out:
@@ -47,14 +38,18 @@ Backend Game Logic:
   - [x] Player chooses to hit or stay
  - [x] If hits and bust (go over 21), automatically loses
 
- ##Added Specs:
- - [x] User Interviews/User Testing
-
-##Stretch Goals
+## New Features
 - [ ] Betting
+   -  Place a bet at the beginning of the hand.
+   -  Handle bets for additional circumstances (double down, split, etc.)
 - [ ] Multiple players
-
-- [x] The artifact produced is properly licensed, preferably with the [MIT license][mit-license].
+  - [ ] Hot Seat Multiplayer
+  - [ ] AI Players
+- [ ]New Game Rules
+  - [ ] Double Down    
+  - [ ] Split Resplit
+  - [ ] Insurance
+- [ ] The artifact produced is properly licensed, preferably with the [MIT license][mit-license].
 
 ---
 
