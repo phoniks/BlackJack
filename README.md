@@ -40,8 +40,8 @@ Backend Game Logic:
 
 ## New Features
 - [ ] Betting
-   -  Place a bet at the beginning of the hand.
-   -  Handle bets for additional circumstances (double down, split, etc.)
+ - [ ] Place a bet at the beginning of the hand.
+ - [ ] Handle bets for additional circumstances (double down, split, etc.)
 - [ ] Multiple players
   - [ ] Hot Seat Multiplayer
   - [ ] AI Players
