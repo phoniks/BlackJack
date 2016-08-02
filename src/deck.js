@@ -1,14 +1,27 @@
 const Card = require( './card' )
 
 module.exports = class Deck {
-  constructor() {
-    this.cards = Card.all()
+  constructor(numberOfPlayers) {
+    this.cards = [];
+    this.numberOfDecks = Math.round(numberOfPlayers / 2)
+    this.generateCards()
   }
 
+  generateCards(){
+    for (var i = this.numberOfDecks; i > 0; i--) {
+      this.cards = this.cards.concat(Card.all())
+    }
+    this.numberOfCards = this.cards.length;
+  }
+
+  isComplete(){
+    console.log(this.numberOfCards, this.cards.length)
+    return this.numberOfCards === this.cards.length;
+  }
   shuffle() {
     var cardCount = this.cards.length
 
-    if (cardCount !== 52){
+    if (cardCount !== this.numberOfCards){
       throw new Error('refusing to shuffle partial deck');
     }
 

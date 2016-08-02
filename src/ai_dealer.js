@@ -27,6 +27,8 @@ module.exports = class AiDealer {
   }
 
   yourAction(hand){
+    // this.game.hands
+    if (this.game.hands.filter(hand => !hand.isBust()).length === 0) return 'stand'
     var value = hand.value();
     if (value < 17) return 'hit';
     if (value > 16 && value < 19 && hand.getAces().length > 0) return 'hit';
