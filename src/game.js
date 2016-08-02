@@ -8,7 +8,7 @@ const AiPlayer = require('./ai_player')
 const AiDealer = require('./ai_dealer')
 const formatAsMoney = require('./format_as_money')
 
-
+//Game Class
 module.exports = class Game {
   constructor(){
 
@@ -22,7 +22,7 @@ module.exports = class Game {
     this.setup();
     this.startRound();
   }
-
+  // Sets up the game (prompts user for # of players)
   setup(){
     if (!this.numberOfHuamnPlayers){
       this.numberOfHuamnPlayers = prompt.forNumber("How many human players?");
@@ -43,7 +43,7 @@ module.exports = class Game {
     this.players.push(this.dealer);
     this.hands = [];
   }
-
+  //creates a player with in input/output ability
   createHumanPlayers(){
     for (var i=0; i < this.numberOfHuamnPlayers; i++){
       var name = prompt.forString("Give player #"+(i+1)+" a name:")
@@ -53,58 +53,82 @@ module.exports = class Game {
           name: name
         })
       );
-      this.shuffelPlayers()
+      this.shufflePlayers()
     }
   }
-
+  //Creates an AI player (no prompts, hard coded)
   createAiPlayers(){
     for (var i=0; i < this.numberOfAiPlayers; i++){
       this.players.push(new AiPlayer({
         game: this,
         name: 'Ai '+(i+1),
       }));
-      this.shuffelPlayers()
+      this.shufflePlayers()
     }
   }
 
-  shuffelPlayers(){
+  //Shuffles the order of players' turns
+  shufflePlayers(){
     this.players = _.shuffle(this.players)
   }
 
+  //Handles rounds of the gam
   startRound(){
+
+    //Increments round #
     this.roundIndex++;
 
+    //Display current round #
     console.log('round #'+this.roundIndex+' start!')
 
+    //Collects all cards and returns them to the dealer
     this.hands.forEach(hand => {
       hand.returnToDealer(this.dealer)
     })
 
+    //Checks if the deck has the right number of cards
     if (this.dealer.deck.cards.length !== 52) {
       throw new Error('dealer isnt playing with a full deck!')
     }
 
+    //Shuffles deck (from deck.js)
     this.dealer.shuffleDeck()
 
+    //Initiates a hand for each player (?)
     this.hands = this.players.map(player => new Hand({player: player}))
 
+
+    //Collects wagers from each player
     this.hands.forEach( hand => {
       if (hand.player === this.dealer) return;
       hand.bet = hand.player.requestBetForHand(hand);
     })
 
+    //Displays the bet for each player as long as they are not the dealer
     this.hands.forEach( hand => {
       if (hand.player === this.dealer) return;
       console.log(hand.player.name+' has bet '+formatAsMoney(hand.bet))
     })
 
+
+    //Deals everyone 2 cards then displays their hand  
     this.dealEveryoneOneCard();
     this.dealEveryoneOneCard();
     this.hands.forEach( hand => {
       console.log(hand.player.name+' was dealt '+hand)
     })
 
+    //who won?
+    var dealersHand = this.hands.find(hand => hand.player === this.dealer);
+
+    //Checks if the dealers has blackjack and alerts player if so.
+    if (dealersHand.value() === 21 && dealersHand.cards.length === 2){
+      console.log('Oh No! Dealer has BlackJack!');
+      
+    }
     // this.actingPlayer = this.players[0];
+    
+    //Checks whether the player has bust 
     this.hands.forEach(hand => {
       while (!hand.isBust()){
         var action = hand.player.yourAction(hand)
@@ -123,15 +147,16 @@ module.exports = class Game {
       }
     })
 
-    // who won?
-    var dealersHand = this.hands.find(hand => hand.player === this.dealer);
-
+    
+    // outputs value of dealers hand
     console.log(colors.green('Dealer has '+dealersHand.value()))
 
+    // Defines a losing hand
     var loosingHands = this.hands.filter(hand => {
       return hand.isBust()
     })
 
+    //Defines a hand that pushes
     var pushingHands = this.hands.filter(hand => {
       return (
         hand !== dealersHand &&
@@ -139,7 +164,7 @@ module.exports = class Game {
         hand.value() === dealersHand.value() 
       );
     })
-
+    // Defines a winning hand
     var winningHands = this.hands.filter(hand => {
       return (
         hand !== dealersHand &&
@@ -158,15 +183,15 @@ module.exports = class Game {
       console.log(colors.green(hand.player.name+' won!'))
     })
 
-
+    //Asks user if they want to start another round
     var playAgain = prompt.forString('Would you like to play again? (y|n)').toLowerCase();
-    if (playAgain === 'y' || startRound === 'yes'){
+    if (playAgain === 'y' || playAgain === 'yes'){
       this.startRound()
-    }
 
+    }
   }
 
-  
+  //Deals a card to each player
   dealEveryoneOneCard(){
     this.hands.forEach( hand => {
       var card = this.dealer.dealCardToHand(hand);
