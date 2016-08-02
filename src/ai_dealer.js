@@ -5,6 +5,7 @@ module.exports = class AiDealer {
     this.name = options.name || 'Dealer'
     this.game = options.game
     this.deck = new Deck;
+    this.winnings = 0;
   }
 
   requestBetForHand(hand){

@@ -1,14 +1,18 @@
 const prompt = require('./prompt')
 const formatAsMoney = require('./format_as_money')
+const colors = require('colors')
 
 module.exports = class HumanPlayer {
   constructor(options) {
     this.name = options.name;
     this.game = options.game;
+    this.bank = 100; // dollars
   }
 
-  requestBetForHand(hand){
-    var bet = prompt.forNumber(this.name+'> How much would you like to bet?')
+  requestBetForHand(hand, min, max){
+    max = this.bank < max ? this.bank : max;
+    console.log(colors.green(this.name+'> you have '+formatAsMoney(this.bank)))
+    var bet = prompt.forNumber(this.name+'> How much would you like to bet? ('+formatAsMoney(min)+'..'+formatAsMoney(max)+')')
     console.log('you\'ve bet '+formatAsMoney(bet))
     return bet;
   }

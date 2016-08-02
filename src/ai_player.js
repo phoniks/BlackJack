@@ -2,10 +2,11 @@ module.exports = class AiPlayer {
   constructor(options) {
     this.name = options.name;
     this.game = options.game;
+    this.bank = 100; // dollars
   }
 
-  requestBetForHand(hand){
-    return 500;
+  requestBetForHand(hand, min, max){
+    return min; // dollars
   }
 
   yourAction(hand){

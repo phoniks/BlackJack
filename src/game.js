@@ -14,8 +14,8 @@ const calculateEndgame = require('./calculate_endgame')
 module.exports = class Game {
   constructor(){
 
-    this.minBet = 500
-    this.maxBet = 5000
+    this.minBet = 5; // dollars
+    this.maxBet = 500; // dollars
 
     this.roundIndex = 0;
 
@@ -97,14 +97,20 @@ module.exports = class Game {
     //Shuffles deck (from deck.js)
     this.dealer.shuffleDeck()
 
-    //Initiates a hand for each player (?)
-    this.hands = this.players.map(player => new Hand({player: player}))
-    var dealersHand = this.hands.find(hand => hand.player === this.dealer);
+    this.players.forEach(player => {
+      if (player === this.dealer) return;
+      console.log(player.name+' has '+formatAsMoney(player.bank))
+    })
 
-    //Collects wagers from each player
-    this.hands.forEach( hand => {
-      if (hand.player === this.dealer) return;
-      hand.bet = hand.player.requestBetForHand(hand);
+    var dealersHand = new Hand({player: this.dealer})
+    this.hands = [dealersHand]
+
+    // Collects wagers from each player && Initiates a hand for each player
+    this.players.forEach( player => {
+      if (player === this.dealer) return;
+      var hand = new Hand({player: player});
+      hand.bet = player.requestBetForHand(hand, this.minBet, this.maxBet);
+      if (hand.bet >= this.minBet) this.hands.push(hand);
     })
 
     //Displays the bet for each player as long as they are not the dealer
@@ -159,13 +165,21 @@ module.exports = class Game {
     var endGame = calculateEndgame(this.hands, dealersHand)
 
     endGame.loosingHands.forEach(hand => {
-      console.log(colors.red(hand.player.name+' lost')+' with '+hand)
+      console.log(colors.red(hand.player.name+' lost ')+'with '+hand)
+      console.log(colors.red(hand.player.name+' lost ')+formatAsMoney(hand.bet))
+      hand.player.bank -= hand.bet
+      this.dealer.winnings += hand.bet
     })
     endGame.pushingHands.forEach(hand => {
-      console.log(colors.yellow(hand.player.name+' pushed')+' with '+hand)
+      console.log(colors.yellow(hand.player.name+' pushed ')+'with '+hand)
+      console.log(colors.yellow(hand.player.name+' pushed ')+formatAsMoney(hand.bet))
     })
     endGame.winningHands.forEach(hand => {
-      console.log(colors.green(hand.player.name+' won!')+' with '+hand)
+      console.log(colors.green(hand.player.name+' won! ')+'with '+hand)
+      console.log(colors.green(hand.player.name+' won! ')+formatAsMoney(hand.bet))
+      var winnings = hand.isNaturalBlackjack() ? (hand.bet * 1.5) : hand.bet
+      hand.player.bank += winnings
+      this.dealer.winnings -= winnings
     })
 
     //Asks user if they want to start another round
