@@ -162,8 +162,9 @@ module.exports = class Game {
     var playAgain = prompt.forString('Would you like to play again? (y|n)').toLowerCase();
     if (playAgain === 'y' || startRound === 'yes'){
       this.startRound()
+      
     }
-
+    else exit()
   }
 
   
