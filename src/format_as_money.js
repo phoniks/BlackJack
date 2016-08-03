@@ -1,3 +1,3 @@
-module.exports = function formatAsMoney(cents){
-  return '$'+(cents/100).toFixed(2);
+module.exports = function formatAsMoney(dollars){
+  return '$'+dollars.toFixed(2);
 }

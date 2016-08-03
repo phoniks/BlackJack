@@ -2,10 +2,11 @@ module.exports = class AiPlayer {
   constructor(options) {
     this.name = options.name;
     this.game = options.game;
+    this.bank = 100; // dollars
   }
 
-  requestBetForHand(hand){
-    return 500;
+  requestBetForHand(hand, min, max){
+    return min; // dollars
   }
 
   yourAction(hand){
@@ -13,5 +14,7 @@ module.exports = class AiPlayer {
     if (value < 17) return 'hit';
     if (value > 16 && value < 19 && hand.getAces().length > 0) return 'hit';
     return 'stand'
+
+    // this.game.dealersHand.cards
   }
 }

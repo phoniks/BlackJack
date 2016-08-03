@@ -3,11 +3,11 @@ const _ = require('lodash');
 module.exports = class Hand {
   constructor(options){
     this.player = options.player;
-    this.cards = [];
+    this.cards = options.cards || [];
   }
 
   toString(){
-    return '['+this.cards.join(' ][')+' ]'
+    return this.cards.join(' ')
   }
 
   value(){
@@ -31,5 +31,9 @@ module.exports = class Hand {
   }
   getAces(){
     return this.cards.filter(card => card.isAce()) 
+  }
+
+  isNaturalBlackjack(){
+    return this.value() === 21 && this.cards.length === 2;
   }
 }

@@ -3,17 +3,19 @@ const prompt = require('./prompt')
 const colors = require('colors')
 const Player = require('./player')
 const Hand = require('./hand')
+const Deck = require('./deck')
 const HumanPlayer = require('./human_player')
 const AiPlayer = require('./ai_player')
 const AiDealer = require('./ai_dealer')
 const formatAsMoney = require('./format_as_money')
+const calculateEndgame = require('./calculate_endgame')
 
 //Game Class
 module.exports = class Game {
   constructor(){
 
-    this.minBet = 500
-    this.maxBet = 5000
+    this.minBet = 5; // dollars
+    this.maxBet = 500; // dollars
 
     this.roundIndex = 0;
 
@@ -41,6 +43,7 @@ module.exports = class Game {
       game: this,
     });
     this.players.push(this.dealer);
+    this.dealer.deck = new Deck(this.players.length)
     this.hands = [];
   }
   //creates a player with in input/output ability
@@ -72,7 +75,7 @@ module.exports = class Game {
     this.players = _.shuffle(this.players)
   }
 
-  //Handles rounds of the gam
+  //Handles rounds of the game
   startRound(){
 
     //Increments round #
@@ -87,21 +90,27 @@ module.exports = class Game {
     })
 
     //Checks if the deck has the right number of cards
-    if (this.dealer.deck.cards.length !== 52) {
+    if (!this.dealer.deck.isComplete()) {
       throw new Error('dealer isnt playing with a full deck!')
     }
 
     //Shuffles deck (from deck.js)
     this.dealer.shuffleDeck()
 
-    //Initiates a hand for each player (?)
-    this.hands = this.players.map(player => new Hand({player: player}))
+    this.players.forEach(player => {
+      if (player === this.dealer) return;
+      console.log(player.name+' has '+formatAsMoney(player.bank))
+    })
 
+    var dealersHand = new Hand({player: this.dealer})
+    this.hands = [dealersHand]
 
-    //Collects wagers from each player
-    this.hands.forEach( hand => {
-      if (hand.player === this.dealer) return;
-      hand.bet = hand.player.requestBetForHand(hand);
+    // Collects wagers from each player && Initiates a hand for each player
+    this.players.forEach( player => {
+      if (player === this.dealer) return;
+      var hand = new Hand({player: player});
+      hand.bet = player.requestBetForHand(hand, this.minBet, this.maxBet);
+      if (hand.bet >= this.minBet) this.hands.push(hand);
     })
 
     //Displays the bet for each player as long as they are not the dealer
@@ -114,73 +123,63 @@ module.exports = class Game {
     //Deals everyone 2 cards then displays their hand  
     this.dealEveryoneOneCard();
     this.dealEveryoneOneCard();
+
+    // dealersHand.cards = [
+    //   new Card(Card.KING, Card.HEARTS),
+    //   new Card(Card.ACE, Card.HEARTS),
+    // ]
+
     this.hands.forEach( hand => {
       console.log(hand.player.name+' was dealt '+hand)
     })
 
-    //who won?
-    var dealersHand = this.hands.find(hand => hand.player === this.dealer);
-
     //Checks if the dealers has blackjack and alerts player if so.
-    if (dealersHand.value() === 21 && dealersHand.cards.length === 2){
+    if (dealersHand.isNaturalBlackjack()){
       console.log('Oh No! Dealer has BlackJack!');
-      
-    }
-    // this.actingPlayer = this.players[0];
-    
-    //Checks whether the player has bust 
-    this.hands.forEach(hand => {
-      while (!hand.isBust()){
-        var action = hand.player.yourAction(hand)
-        if (action === 'hit'){
-          this.dealer.dealCardToHand(hand)
-          console.log(colors.green(hand.player.name+' Hit!'))
-        }else if (action === 'stand'){
-          console.log(colors.green(hand.player.name+' Stand!'))
-          return;
-        }else{
-          console.log('UNKONWN ACTION', [action])
+  
+    }else{
+      //While the hand is not a bust if player action = hit deal a card and console log the hit or if player action = stand console log the stand
+      this.hands.forEach(hand => {
+        while (!hand.isBust() && hand.cards.length < 5){
+          var action = hand.player.yourAction(hand)
+          if (action === 'hit'){
+            this.dealer.dealCardToHand(hand)
+            console.log(colors.green(hand.player.name+' Hit!'))
+          }else if (action === 'stand'){
+            console.log(colors.green(hand.player.name+' Stand!'))
+            return;
+          }else{
+            throw new Error('UNKONWN ACTION: '+action);
+          }
         }
-      }
-      if (hand.isBust()){
-        console.log(colors.red(hand.player.name+' BUSTED! '+hand))
-      }
-    })
+        if (hand.isBust()){
+          console.log(colors.red(hand.player.name+' BUSTED! '+hand))
+        }
+      })
 
-    
-    // outputs value of dealers hand
-    console.log(colors.green('Dealer has '+dealersHand.value()))
+      
+      // outputs value of dealers hand
+      console.log(colors.green('Dealer has '+dealersHand.value()))
+    }
 
-    // Defines a losing hand
-    var loosingHands = this.hands.filter(hand => {
-      return hand.isBust()
-    })
+    var endGame = calculateEndgame(this.hands, dealersHand)
 
-    //Defines a hand that pushes
-    var pushingHands = this.hands.filter(hand => {
-      return (
-        hand !== dealersHand &&
-        !hand.isBust() && 
-        hand.value() === dealersHand.value() 
-      );
+    endGame.loosingHands.forEach(hand => {
+      console.log(colors.red(hand.player.name+' lost ')+'with '+hand)
+      console.log(colors.red(hand.player.name+' lost ')+formatAsMoney(hand.bet))
+      hand.player.bank -= hand.bet
+      this.dealer.winnings += hand.bet
     })
-    // Defines a winning hand
-    var winningHands = this.hands.filter(hand => {
-      return (
-        hand !== dealersHand &&
-        !hand.isBust() && 
-        hand.value() > dealersHand.value()
-      );
+    endGame.pushingHands.forEach(hand => {
+      console.log(colors.yellow(hand.player.name+' pushed ')+'with '+hand)
+      console.log(colors.yellow(hand.player.name+' pushed ')+formatAsMoney(hand.bet))
     })
-
-    loosingHands.forEach(hand => {
-      console.log(colors.red(hand.player.name+' lost'))
-    })
-    pushingHands.forEach(hand => {
-      console.log(colors.yellow(hand.player.name+' pushed'))
-    })
-    winningHands.forEach(hand => {
-      console.log(colors.green(hand.player.name+' won!'))
+    endGame.winningHands.forEach(hand => {
+      console.log(colors.green(hand.player.name+' won! ')+'with '+hand)
+      console.log(colors.green(hand.player.name+' won! ')+formatAsMoney(hand.bet))
+      var winnings = hand.isNaturalBlackjack() ? (hand.bet * 1.5) : hand.bet
+      hand.player.bank += winnings
+      this.dealer.winnings -= winnings
     })
 
     //Asks user if they want to start another round
@@ -209,6 +208,7 @@ module.exports = class Game {
   // }
 
 };
+
 
 
 // const humans = rl.question("How many human players?")
