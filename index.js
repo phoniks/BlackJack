@@ -1,25 +1,26 @@
 // Imports
-const rl = require('readline-sync')
+const prompt = require('./src/prompt')
 const Game = require('./src/game')
+const help = require('./src/help')
+const start = () => new Game;
+//Game Intro
 
-new Game;
+console.log( "Welcome to Yaseen, John and Jared's BlackJack" )
+console.log( "Extended from Jrob Harman and Yaseen's work" )
 
-// //Game Intro
+// console.log( "Welcome to Yaseen, Jrob & Harman's BlackJack" )
 
-// console.log( "Welcome to Yaseen, John and Jared's BlackJack" )
-// console.log( "Extended from Jrob Harman and Yaseen's work" )
-// console.log( "For rules please enter 'help'" )
-// console.log( "To start a game please enter 'start'" )
+const promptForAction = function(){
+  var option = prompt.forString("'HELP' for rules or 'START' to start a game:").toUpperCase()
+  if (option === 'H' || option === 'HELP'){
+    help()
+  }
+  if (option === 'S' || option === 'START'){
+    start()
+  }
+}
 
-// // console.log( "Welcome to Yaseen, Jrob & Harman's BlackJack" )
-// let begin = rl.question("'help' for rules or 'start' to set up a game:")
-// if (begin = 'start'){
-//   console.log('Starting Game')
-// }else if (begin = 'help'){
-//   console.log(help)
-// }
-
-
+promptForAction()
 
 
 
