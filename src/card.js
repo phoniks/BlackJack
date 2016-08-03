@@ -1,4 +1,4 @@
-const HEARTS = '❤️'
+const HEARTS = '❤️' 
 const DIAMONDS = '♦️'
 const CLUBS = '♣️'
 const SPADES = '♠️'

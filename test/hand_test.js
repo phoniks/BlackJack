@@ -3,6 +3,30 @@ const Hand = require('../src/hand')
 const Card = require('../src/card')
 
 describe('Hand', function() {
+  describe('#canDouble', function() {
+    it('should only double when you have <=2 and sufficent bank', function(){
+      var hand = new Hand({
+        player: {bank: 100},
+        cards: [{},{}],
+      });
+      hand.bet = 25;
+      expect(hand.canDouble()).to.be(true)
+
+      var hand = new Hand({
+        player: {bank: 100},
+        cards: [{},{}],
+      });
+      hand.bet = 75;
+      expect(hand.canDouble()).to.be(false)
+
+      var hand = new Hand({
+        player: {bank: 100},
+        cards: [{},{},{}],
+      });
+      hand.bet = 5;
+      expect(hand.canDouble()).to.be(false)
+    })
+  })
   describe('#isBust', function() {
 
     it('[K❤️ ][A♦️ ] should not be a bust', function() {

@@ -11,7 +11,7 @@ console.log( "Extended from Jrob Harman and Yaseen's work" )
 // console.log( "Welcome to Yaseen, Jrob & Harman's BlackJack" )
 
 const promptForAction = function(){
-  var option = prompt.forString("'HELP' for rules or 'START' to start a game:").toUpperCase()
+  var option = prompt.forString("'HELP' for rules or 'START' to start a game: \n [ 🂤 🂠 ] ").toUpperCase()
   if (option === 'H' || option === 'HELP'){
     help()
   }

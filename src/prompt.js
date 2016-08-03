@@ -2,11 +2,15 @@ const rl = require('readline-sync')
 const colors = require('colors')
 
 module.exports = {
-  forString: function(question){
+  forString(question){
     return rl.question(colors.green(question+' '));
-  },
+  }
 
-  forNumber: function(question){
+  forNumber(question){
     return parseInt(this.forString(question), 10);
+  }
+
+  forAction(){
+    
   }
 }

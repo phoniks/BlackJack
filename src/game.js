@@ -103,7 +103,7 @@ module.exports = class Game {
     })
 
     var dealersHand = new Hand({player: this.dealer})
-    this.hands = [dealersHand]
+    this.hands = []
 
     // Collects wagers from each player && Initiates a hand for each player
     this.players.forEach( player => {
@@ -115,9 +115,10 @@ module.exports = class Game {
 
     //Displays the bet for each player as long as they are not the dealer
     this.hands.forEach( hand => {
-      if (hand.player === this.dealer) return;
       console.log(hand.player.name+' has bet '+formatAsMoney(hand.bet))
     })
+
+    this.hands.push(dealersHand);
 
 
     //Deals everyone 2 cards then displays their hand  
@@ -140,14 +141,22 @@ module.exports = class Game {
     }else{
       //While the hand is not a bust if player action = hit deal a card and console log the hit or if player action = stand console log the stand
       this.hands.forEach(hand => {
+
+        var promptPrefix = colors.green(hand.player.name)+' '+colors.blue(hand)+colors.green(' > ')
+
         while (!hand.isBust() && hand.cards.length < 5){
           var action = hand.player.yourAction(hand)
           if (action === 'hit'){
             this.dealer.dealCardToHand(hand)
-            console.log(colors.green(hand.player.name+' Hit!'))
+            console.log(promptPrefix+'Hit!')
           }else if (action === 'stand'){
-            console.log(colors.green(hand.player.name+' Stand!'))
+            console.log(promptPrefix+'Stand!')
             return;
+          }else if (action === 'double'){
+            this.dealer.dealCardToHand(hand) 
+            hand.player.bank -= hand.bet;
+            hand.bet += hand.bet
+            console.log(promptPrefix+"your bet is now "+hand.bet)
           }else{
             throw new Error('UNKONWN ACTION: '+action);
           }

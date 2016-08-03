@@ -36,4 +36,8 @@ module.exports = class Hand {
   isNaturalBlackjack(){
     return this.value() === 21 && this.cards.length === 2;
   }
+
+  canDouble(){
+    return this.cards.length <= 2 && this.player.bank >= (this.bet *2)
+  }
 }

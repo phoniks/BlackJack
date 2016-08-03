@@ -12,16 +12,20 @@ module.exports = class HumanPlayer {
   requestBetForHand(hand, min, max){
     max = this.bank < max ? this.bank : max;
     console.log(colors.green(this.name+'> you have '+formatAsMoney(this.bank)))
-    var bet = prompt.forNumber(this.name+'> How much would you like to bet? ('+formatAsMoney(min)+'..'+formatAsMoney(max)+')')
+    var ask = this.name+'> How much would you like to bet? ('+formatAsMoney(min)+'..'+formatAsMoney(max)+')';
+    var bet = 1;
+    while(bet > 0 && bet < min) bet = prompt.forNumber(ask)
     console.log('you\'ve bet '+formatAsMoney(bet))
     return bet;
   }
 
   yourAction(hand){
+     
+    var ask = this.name+'> you have '+hand+'. What would you like to do? '
+    ask += hand.canDouble() <= 2 ? '([h]it,[s]tand,[d]ouble)' : '([h]it,[s]tand)'
+
     while(true){
-      var ask = this.name+'> you have '+hand+'. What would you like to do? ([h]it,[s]tand)'
       var action = prompt.forString(ask).toLowerCase()
-      
       // 'hit'
       if (action === 'h' || action === 'hit'){
         return 'hit'
@@ -30,6 +34,10 @@ module.exports = class HumanPlayer {
       if (action === 's' || action === 'stand'){
         return 'stand'
       }
+      if (action === 'd' || action === 'double'){
+        return 'double'
+      }
     }
   }
-}
+
+};
