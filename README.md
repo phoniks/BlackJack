@@ -40,16 +40,16 @@ Backend Game Logic:
 
 ## New Features
 - [ ] Betting
- - [ ] Place a bet at the beginning of the hand.
+ - [x] Place a bet at the beginning of the hand.
  - [ ] Handle bets for additional circumstances (double down, split, etc.)
-- [ ] Multiple players
-  - [ ] Hot Seat Multiplayer
-  - [ ] AI Players
+- [x] Multiple players
+  - [x] Hot Seat Multiplayer
+  - [x] AI Players
 - [ ] New Game Rules
-  - [ ] Double Down    
+  - [x] Double Down    
   - [ ] Split/Resplit
   - [ ] Insurance
-- [ ] The artifact produced is properly licensed, preferably with the [MIT license][mit-license].
+- [x] The artifact produced is properly licensed, preferably with the [MIT license][mit-license].
 
 ---
 
