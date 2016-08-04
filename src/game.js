@@ -129,7 +129,22 @@ module.exports = class Game {
         game: this,
         player: player
       });
-      hand.bet = player.requestBetForHand(hand, this.minBet, this.maxBet);
+
+      var min = this.minBet
+      var max = player.bank < this.maxBet ? player.bank : this.maxBet;
+      while (true){
+        var bet = player.requestBetForHand(hand, min, max);
+        if (bet > max){
+          console.log(colors.red('thats bet is too hight'))
+          continue;
+        }
+        if (bet < min){
+          console.log(colors.red('thats bet is too low'))
+          continue;
+        }
+        hand.bet = bet;
+        break
+      }
       player.bank -= hand.bet
       if (hand.bet >= this.minBet) this.hands.push(hand);
     })

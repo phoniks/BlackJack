@@ -10,13 +10,9 @@ module.exports = class HumanPlayer {
   }
 
   requestBetForHand(hand, min, max){
-    max = this.bank < max ? this.bank : max;
-    console.log(colors.green(this.name+'> you have '+formatAsMoney(this.bank)))
+    this.game.report(this.name, 'you have '+formatAsMoney(this.bank))
     var ask = this.name+'> How much would you like to bet? ('+formatAsMoney(min)+'..'+formatAsMoney(max)+')';
-    var bet = 1;
-    while(bet > 0 && bet < min) bet = prompt.forNumber(ask)
-    console.log('you\'ve bet '+formatAsMoney(bet))
-    return bet;
+    return prompt.forNumber(ask)
   }
 
   yourAction(hand){
