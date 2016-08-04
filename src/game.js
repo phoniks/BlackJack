@@ -4,6 +4,7 @@ const colors = require('colors')
 const Player = require('./player')
 const Hand = require('./hand')
 const Deck = require('./deck')
+const Card = require('./card')
 const HumanPlayer = require('./human_player')
 const AiPlayer = require('./ai_player')
 const AiDealer = require('./ai_dealer')
@@ -19,22 +20,34 @@ module.exports = class Game {
 
     this.roundIndex = 0;
 
-    // this.dealer = new AiPlayer(this);
     this.players = []
     this.setup();
     this.startRound();
   }
+
+  report(context, message){
+    console.log(colors.green(context+'')+'> '+message)
+  }
+
+  prompt(ask){
+    return prompt.forString(ask)
+  }
+
+  promptForNumber(ask){
+    return prompt.forNumber(ask)
+  }
+
   // Sets up the game (prompts user for # of players)
   setup(){
     if (!this.numberOfHuamnPlayers){
-      this.numberOfHuamnPlayers = prompt.forNumber("How many human players?");
-      console.log('okay '+this.numberOfHuamnPlayers+' human players.')
+      this.numberOfHuamnPlayers = this.promptForNumber("How many human players?");
+      this.report('okay', this.numberOfHuamnPlayers+' human players.')
       this.createHumanPlayers();
     }
 
     if (!this.numberOfAiPlayers){
-      this.numberOfAiPlayers = prompt.forNumber("How many Ai players?");
-      console.log('okay '+this.numberOfAiPlayers+' Ai players.')
+      this.numberOfAiPlayers = this.promptForNumber("How many Ai players?");
+      this.report('okay', this.numberOfAiPlayers+' Ai players.')
       this.createAiPlayers();
     }
 
@@ -46,10 +59,11 @@ module.exports = class Game {
     this.dealer.deck = new Deck(this.players.length)
     this.hands = [];
   }
+
   //creates a player with in input/output ability
   createHumanPlayers(){
     for (var i=0; i < this.numberOfHuamnPlayers; i++){
-      var name = prompt.forString("Give player #"+(i+1)+" a name:")
+      var name = this.prompt("Give player #"+(i+1)+" a name:")
       this.players.push(
         new HumanPlayer({
           game: this,
@@ -82,7 +96,7 @@ module.exports = class Game {
     this.roundIndex++;
 
     //Display current round #
-    console.log('round #'+this.roundIndex+' start!')
+    this.report('round #'+this.roundIndex, 'start!')
 
     //Collects all cards and returns them to the dealer
     this.hands.forEach(hand => {
@@ -99,100 +113,109 @@ module.exports = class Game {
 
     this.players.forEach(player => {
       if (player === this.dealer) return;
-      console.log(player.name+' has '+formatAsMoney(player.bank))
+      this.report(player.name, 'has '+formatAsMoney(player.bank)+' in their bank')
     })
 
-    var dealersHand = new Hand({player: this.dealer})
+    var dealersHand = new Hand({
+      game: this,
+      player: this.dealer
+    })
     this.hands = []
 
     // Collects wagers from each player && Initiates a hand for each player
     this.players.forEach( player => {
       if (player === this.dealer) return;
-      var hand = new Hand({player: player});
+      var hand = new Hand({
+        game: this,
+        player: player
+      });
       hand.bet = player.requestBetForHand(hand, this.minBet, this.maxBet);
       if (hand.bet >= this.minBet) this.hands.push(hand);
     })
 
     //Displays the bet for each player as long as they are not the dealer
     this.hands.forEach( hand => {
-      console.log(hand.player.name+' has bet '+formatAsMoney(hand.bet))
+      hand.report('has bet '+formatAsMoney(hand.bet))
     })
 
     this.hands.push(dealersHand);
 
 
-    //Deals everyone 2 cards then displays their hand  
+    //Deals everyone 2 cards then displays their hand
     this.dealEveryoneOneCard();
     this.dealEveryoneOneCard();
-
-    // dealersHand.cards = [
-    //   new Card(Card.KING, Card.HEARTS),
-    //   new Card(Card.ACE, Card.HEARTS),
-    // ]
 
     this.hands.forEach( hand => {
-      console.log(hand.player.name+' was dealt '+hand)
+      this.report(hand.player.name, 'was dealt '+hand)
     })
 
     //Checks if the dealers has blackjack and alerts player if so.
     if (dealersHand.isNaturalBlackjack()){
-      console.log('Oh No! Dealer has BlackJack!');
-  
+      this.report('Game Over!', 'Oh No! Dealer has BlackJack!');
+
     }else{
       //While the hand is not a bust if player action = hit deal a card and console log the hit or if player action = stand console log the stand
-      this.hands.forEach(hand => {
+      // this.hands.forEach(hand => {
+      this.players.forEach(player => {
+        const playableHands = () => {
+          return this.hands.filter(hand =>
+            hand.player === player && hand.isPlayable()
+          )
+        }
 
-        var promptPrefix = colors.green(hand.player.name)+' '+colors.blue(hand)+colors.green(' > ')
-
-        while (!hand.isBust() && hand.cards.length < 5){
+        while (true){
+          var hands = playableHands()
+          console.log('----> '+player.name+'>>> '+hands.join(' / '))
+          if (hands.length === 0) break;
+          var hand = hands[0]
+          this.report('Dealer has ', dealersHand.value())
           var action = hand.player.yourAction(hand)
           if (action === 'hit'){
             this.dealer.dealCardToHand(hand)
-            console.log(promptPrefix+'Hit!')
+            hand.report('Hit!')
           }else if (action === 'stand'){
-            console.log(promptPrefix+'Stand!')
-            return;
+            hand.report('Stand!')
+            hand.stood = true
           }else if (action === 'double'){
-            this.dealer.dealCardToHand(hand) 
+            this.dealer.dealCardToHand(hand)
             hand.player.bank -= hand.bet;
             hand.bet += hand.bet
-            console.log(promptPrefix+"your bet is now "+hand.bet)
+            hand.report('doubled their bet')
+          }else if (action === 'split'){
+            var newHand = hand.split()
+            this.hands.push(newHand) // TODO inject in order
+            this.dealer.dealCardToHand(hand);
+            this.dealer.dealCardToHand(newHand);
+            hand.report('split their hand into '+hand+' '+newHand)
           }else{
             throw new Error('UNKONWN ACTION: '+action);
           }
-        }
-        if (hand.isBust()){
-          console.log(colors.red(hand.player.name+' BUSTED! '+hand))
+          if (hand.isBust()){
+            hand.report('BUSTED!')
+          }
         }
       })
-
-      
-      // outputs value of dealers hand
-      console.log(colors.green('Dealer has '+dealersHand.value()))
     }
 
     var endGame = calculateEndgame(this.hands, dealersHand)
 
     endGame.loosingHands.forEach(hand => {
-      console.log(colors.red(hand.player.name+' lost ')+'with '+hand)
-      console.log(colors.red(hand.player.name+' lost ')+formatAsMoney(hand.bet))
+      hand.report('lost '+formatAsMoney(hand.bet))
       hand.player.bank -= hand.bet
       this.dealer.winnings += hand.bet
     })
     endGame.pushingHands.forEach(hand => {
-      console.log(colors.yellow(hand.player.name+' pushed ')+'with '+hand)
-      console.log(colors.yellow(hand.player.name+' pushed ')+formatAsMoney(hand.bet))
+      hand.report('pushed '+formatAsMoney(hand.bet))
     })
     endGame.winningHands.forEach(hand => {
-      console.log(colors.green(hand.player.name+' won! ')+'with '+hand)
-      console.log(colors.green(hand.player.name+' won! ')+formatAsMoney(hand.bet))
+      hand.report('won! '+formatAsMoney(hand.bet))
       var winnings = hand.isNaturalBlackjack() ? (hand.bet * 1.5) : hand.bet
       hand.player.bank += winnings
       this.dealer.winnings -= winnings
     })
 
     //Asks user if they want to start another round
-    var playAgain = prompt.forString('Would you like to play again? (y|n)').toLowerCase();
+    var playAgain = this.prompt('Would you like to play again? (y|n)').toLowerCase();
     if (playAgain === 'y' || playAgain === 'yes'){
       this.startRound()
 
@@ -206,7 +229,7 @@ module.exports = class Game {
     });
   }
 
-  
+
   // numPlayers(){
   //   sum = this.humans + this.ai
   //   if (sum > 5){
@@ -221,4 +244,4 @@ module.exports = class Game {
 
 
 // const humans = rl.question("How many human players?")
-// const ai = rl.question("How many AI players?")  
+// const ai = rl.question("How many AI players?")

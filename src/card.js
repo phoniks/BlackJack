@@ -1,4 +1,4 @@
-const HEARTS = '❤️' 
+const HEARTS = '❤️'
 const DIAMONDS = '♦️'
 const CLUBS = '♣️'
 const SPADES = '♠️'
@@ -25,7 +25,7 @@ class Card {
   }
 
   toString() {
-    return `[${this.rank}${this.suit} ]`
+    return `${this.rank}${this.suit} `
   }
 
   value() {

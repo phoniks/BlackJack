@@ -20,23 +20,20 @@ module.exports = class HumanPlayer {
   }
 
   yourAction(hand){
-     
+
+    var actions = ['[h]it','[s]tand']
+    if (hand.canDouble()) actions.push('[d]ouble')
+    if (hand.canSplit()) actions.push('s[p]lit')
+
     var ask = this.name+'> you have '+hand+'. What would you like to do? '
-    ask += hand.canDouble() <= 2 ? '([h]it,[s]tand,[d]ouble)' : '([h]it,[s]tand)'
+    ask += '('+actions.join(', ')+')'
 
     while(true){
       var action = prompt.forString(ask).toLowerCase()
-      // 'hit'
-      if (action === 'h' || action === 'hit'){
-        return 'hit'
-      }
-      // 'stand'
-      if (action === 's' || action === 'stand'){
-        return 'stand'
-      }
-      if (action === 'd' || action === 'double'){
-        return 'double'
-      }
+      if (action === 'h' || action === 'hit') return 'hit';
+      if (action === 's' || action === 'stand') return 'stand';
+      if (hand.canDouble() && (action === 'd' || action === 'double')) return 'double';
+      if (hand.canSplit()  && (action === 'p' || action === 'split')) return 'split';
     }
   }
 

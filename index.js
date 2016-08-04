@@ -27,11 +27,11 @@ promptForAction()
   // if (humans > 2){
   // console.log('This game has a maximum of 2 human players. Setting human players to 2')
   // humans = 2
-  //   }else{ 
+  //   }else{
   //   if ((ai + humans) > 5){
   //   console.log('This game has a maximum of 5 total players. Setting total players to max')
   //   let ai = (5 - humans)
   // }
   // console.log('human players: '+human+' AI players: '+ai)
   // }
-  // 
+  //
