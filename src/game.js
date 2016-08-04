@@ -39,9 +39,9 @@ module.exports = class Game {
 
   // Sets up the game (prompts user for # of players)
   setup(){
-    if (!this.numberOfHuamnPlayers){
-      this.numberOfHuamnPlayers = this.promptForNumber("How many human players?");
-      this.report('okay', this.numberOfHuamnPlayers+' human players.')
+    if (!this.numberOfHumanPlayers){
+      this.numberOfHumanPlayers = this.promptForNumber("How many human players?");
+      this.report('okay', this.numberOfHumanPlayers+' human players.')
       this.createHumanPlayers();
     }
 
@@ -62,7 +62,7 @@ module.exports = class Game {
 
   //creates a player with in input/output ability
   createHumanPlayers(){
-    for (var i=0; i < this.numberOfHuamnPlayers; i++){
+    for (var i=0; i < this.numberOfHumanPlayers; i++){
       var name = this.prompt("Give player #"+(i+1)+" a name:")
       this.players.push(
         new HumanPlayer({
@@ -116,7 +116,7 @@ module.exports = class Game {
       this.report(player.name, 'has '+formatAsMoney(player.bank)+' in their bank')
     })
 
-    var dealersHand = new Hand({
+    this.dealersHand = new Hand({
       game: this,
       player: this.dealer
     })
@@ -130,6 +130,7 @@ module.exports = class Game {
         player: player
       });
       hand.bet = player.requestBetForHand(hand, this.minBet, this.maxBet);
+      player.bank -= hand.bet
       if (hand.bet >= this.minBet) this.hands.push(hand);
     })
 
@@ -138,81 +139,95 @@ module.exports = class Game {
       hand.report('has bet '+formatAsMoney(hand.bet))
     })
 
-    this.hands.push(dealersHand);
+    this.hands.push(this.dealersHand);
 
 
     //Deals everyone 2 cards then displays their hand
     this.dealEveryoneOneCard();
     this.dealEveryoneOneCard();
 
+    // HACK to test inssurance
+    // this.dealersHand.cards = [
+    //   new Card(Card.KING, Card.HEARTS),
+    //   new Card(Card.ACE, Card.HEARTS)
+    // ]
+
     this.hands.forEach( hand => {
-      this.report(hand.player.name, 'was dealt '+hand)
+      this.report(hand.player.name, 'was dealt 🂠 '+hand.hideFirstDealt())
     })
 
-    //Checks if the dealers has blackjack and alerts player if so.
-    if (dealersHand.isNaturalBlackjack()){
-      this.report('Game Over!', 'Oh No! Dealer has BlackJack!');
+    //While the hand is not a bust if player action = hit deal a card and console log the hit or if player action = stand console log the stand
+    // this.hands.forEach(hand => {
+    this.players.forEach(player => {
+      const playableHands = () => {
+        return this.hands.filter(hand =>
+          hand.player === player && hand.isPlayable()
+        )
+      }
 
-    }else{
-      //While the hand is not a bust if player action = hit deal a card and console log the hit or if player action = stand console log the stand
-      // this.hands.forEach(hand => {
-      this.players.forEach(player => {
-        const playableHands = () => {
-          return this.hands.filter(hand =>
-            hand.player === player && hand.isPlayable()
-          )
+      while (true){
+        var hands = playableHands()
+        console.log('----> '+player.name+'>>> '+hands.join(' / '))
+        if (hands.length === 0) break;
+        var hand = hands[0]
+        this.report('Dealer is showing ', this.dealersHand.hideFirstDealt())
+        var action = hand.player.yourAction(hand)
+        if (action === 'hit'){
+          this.dealer.dealCardToHand(hand)
+          hand.report('Hit!')
+        }else if (action === 'stand'){
+          hand.report('Stand!')
+          hand.stood = true
+        }else if (action === 'double'){
+          this.dealer.dealCardToHand(hand)
+          hand.player.bank -= hand.bet;
+          hand.bet += hand.bet
+          hand.report('doubled their bet')
+        }else if (action === 'split'){
+          var newHand = hand.split()
+          this.hands.push(newHand) // TODO inject in order
+          this.dealer.dealCardToHand(hand);
+          this.dealer.dealCardToHand(newHand);
+          hand.report('split their hand into '+hand+' '+newHand)
+        }else if (action === 'insurance'){
+          // TODO ask for side bet up to half of hand.bet
+          hand.insurance = Math.round(hand.bet/2)
+          hand.player.bank -= hand.insurance
+          hand.report('bought insurance for '+hand.insurance)
+        }else{
+          throw new Error('UNKONWN ACTION: '+action);
         }
-
-        while (true){
-          var hands = playableHands()
-          console.log('----> '+player.name+'>>> '+hands.join(' / '))
-          if (hands.length === 0) break;
-          var hand = hands[0]
-          this.report('Dealer has ', dealersHand.value())
-          var action = hand.player.yourAction(hand)
-          if (action === 'hit'){
-            this.dealer.dealCardToHand(hand)
-            hand.report('Hit!')
-          }else if (action === 'stand'){
-            hand.report('Stand!')
-            hand.stood = true
-          }else if (action === 'double'){
-            this.dealer.dealCardToHand(hand)
-            hand.player.bank -= hand.bet;
-            hand.bet += hand.bet
-            hand.report('doubled their bet')
-          }else if (action === 'split'){
-            var newHand = hand.split()
-            this.hands.push(newHand) // TODO inject in order
-            this.dealer.dealCardToHand(hand);
-            this.dealer.dealCardToHand(newHand);
-            hand.report('split their hand into '+hand+' '+newHand)
-          }else{
-            throw new Error('UNKONWN ACTION: '+action);
-          }
-          if (hand.isBust()){
-            hand.report('BUSTED!')
-          }
+        if (hand.isBust()){
+          hand.report('BUSTED!')
         }
-      })
-    }
+      }
+    })
 
-    var endGame = calculateEndgame(this.hands, dealersHand)
+    var endGame = calculateEndgame(this.hands, this.dealersHand)
 
     endGame.loosingHands.forEach(hand => {
-      hand.report('lost '+formatAsMoney(hand.bet))
-      hand.player.bank -= hand.bet
+      hand.report('lost '+formatAsMoney(hand.bet)+' with '+hand)
       this.dealer.winnings += hand.bet
     })
     endGame.pushingHands.forEach(hand => {
-      hand.report('pushed '+formatAsMoney(hand.bet))
+      hand.report('pushed '+formatAsMoney(hand.bet)+' with '+hand)
+      hand.player.bank += hand.bet
     })
     endGame.winningHands.forEach(hand => {
-      hand.report('won! '+formatAsMoney(hand.bet))
+      hand.report('won! '+formatAsMoney(hand.bet)+' with '+hand)
       var winnings = hand.isNaturalBlackjack() ? (hand.bet * 1.5) : hand.bet
       hand.player.bank += winnings
       this.dealer.winnings -= winnings
     })
+
+    if (this.dealersHand.isNaturalBlackjack()){
+      this.hands.filter(hand => hand.insurance).forEach(hand => {
+        var winnings = hand.insurance * 2
+        hand.report('won insurance! '+formatAsMoney(winnings))
+        hand.player.bank += winnings
+        this.dealer.winnings -= winnings
+      })
+    }
 
     //Asks user if they want to start another round
     var playAgain = this.prompt('Would you like to play again? (y|n)').toLowerCase();

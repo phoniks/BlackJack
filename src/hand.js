@@ -7,6 +7,7 @@ module.exports = class Hand {
     this.player = options.player;
     this.cards = options.cards || [];
     this.bet = options.bet || 0;
+    this.insurance = null;
   }
 
   toString(){
@@ -18,7 +19,7 @@ module.exports = class Hand {
   }
 
   report(message){
-    this.game.report(this.player.name+' '+this, message);
+    this.game.report(this.player.name+' '+this.hideFirstDealt(), message);
     // this.game.report(
     //   'Player: '+this.player.name+"\n"+
     //   'Hand: '+'('+this.cards.join(' ')+')='+this.value()+"\n"+
@@ -60,6 +61,16 @@ module.exports = class Hand {
   }
   getAces(){
     return this.cards.filter(card => card.isAce())
+  }
+
+  // hasAceShowing(){
+  //   return this.cards.slice(1).find(card => card.isAce()).length > 0
+  // }
+
+  hideFirstDealt(){
+    for (var i = 1; i <= this.cards.length; i++) {
+    return this.cards[i]
+    }
   }
 
   isNaturalBlackjack(){
