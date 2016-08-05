@@ -39,13 +39,13 @@ Backend Game Logic:
  - [x] If hits and bust (go over 21), automatically loses
 
 ## New Features
-- [ ] Betting
+- [x] Betting
  - [x] Place a bet at the beginning of the hand.
  - [x] Handle bets for additional circumstances (double down, split, etc.)
 - [x] Multiple players
   - [x] Hot Seat Multiplayer
   - [x] AI Players
-- [ ] New Game Rules
+- [x] New Game Rules
   - [x] Double Down    
   - [x] Split/Resplit
   - [x] Insurance
