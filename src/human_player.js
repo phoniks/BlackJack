@@ -9,14 +9,19 @@ module.exports = class HumanPlayer {
     this.bank = 100; // dollars
   }
 
-  requestBetForHand(hand, min, max){
+  requestBet(min, max){
     this.game.report(this.name, 'you have '+formatAsMoney(this.bank))
     var ask = this.name+'> How much would you like to bet? ('+formatAsMoney(min)+'..'+formatAsMoney(max)+')';
-    return prompt.forNumber(ask)
+    while (true) {
+      var bet = prompt.forNumber(ask)
+      if (bet > max) console.log(colors.red('thats bet is too hight'))
+      else if (bet < min) console.log(colors.red('thats bet is too low'))
+      else return bet;
+    }
   }
 
   yourAction(hand){
-    var dealersHand = this.game.dealersHand
+    var dealersHand = hand.dealersHand
     var canDouble = hand.canDouble()
     var canSplit  = hand.canSplit()
     var canInsure = (
@@ -30,7 +35,7 @@ module.exports = class HumanPlayer {
     if (canSplit)  actions.push('s[p]lit')
     if (canInsure) actions.push('[i]nsurance')
 
-    var ask = this.name+'> you have '+hand+'. What would you like to do? '
+    var ask = this.name+'> you have '+hand.toPrivateString()+'. What would you like to do? '
     ask += '('+actions.join(', ')+')'
 
     while(true){

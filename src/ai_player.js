@@ -5,7 +5,7 @@ module.exports = class AiPlayer {
     this.bank = 100; // dollars
   }
 
-  requestBetForHand(hand, min, max){
+  requestBet(hand, min, max){
     return min; // dollars
   }
 

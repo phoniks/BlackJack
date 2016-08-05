@@ -11,25 +11,26 @@ module.exports = class Hand {
   }
 
   toString(){
-    return (
-      (this.cards.length === 0 ? '(empty hand)' : '('+this.cards.join(' ')+')')+
-      '='+this.value()+
-      ' | '+formatAsMoney(this.bet)
-    )
+    throw new Error('DONT CALL THIS ANYMORE');
+  }
+
+  toPublicString(){
+    var cards = this.cards.map(card => card.toString())
+    cards.shift()
+    cards.unshift('🂠')
+    return this.cardsToString(cards)
+  }
+
+  toPrivateString(){
+    return this.cardsToString(this.cards)+' ('+this.value()+')'
+  }
+
+  cardsToString(cards){
+    return '['+cards.join(' ')+' ]'
   }
 
   report(message){
-    this.game.report(this.player.name+' '+this.hideFirstDealt(), message);
-    // this.game.report(
-    //   'Player: '+this.player.name+"\n"+
-    //   'Hand: '+'('+this.cards.join(' ')+')='+this.value()+"\n"+
-    //   'Bet: '+this.bet+"\n",
-    //   message
-    // )
-  }
-
-  prompt(ask){
-    return this.game.prompt(this+' '+ask)
+    this.game.report(this.player.name+' '+this.toPublicString(), message);
   }
 
   promptForNumber(ask){
@@ -61,16 +62,6 @@ module.exports = class Hand {
   }
   getAces(){
     return this.cards.filter(card => card.isAce())
-  }
-
-  // hasAceShowing(){
-  //   return this.cards.slice(1).find(card => card.isAce()).length > 0
-  // }
-
-  hideFirstDealt(){
-    for (var i = 1; i <= this.cards.length; i++) {
-    return this.cards[i]
-    }
   }
 
   isNaturalBlackjack(){
