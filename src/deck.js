@@ -15,9 +15,9 @@ module.exports = class Deck {
   }
 
   isComplete(){
-    console.log(this.numberOfCards, this.cards.length)
     return this.numberOfCards === this.cards.length;
   }
+
   shuffle() {
     var cardCount = this.cards.length
 

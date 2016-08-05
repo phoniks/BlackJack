@@ -25,7 +25,7 @@ class Card {
   }
 
   toString() {
-    return `[${this.rank}${this.suit} ]`
+    return `${this.rank}${this.suit} `
   }
 
   value() {
