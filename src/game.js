@@ -34,6 +34,7 @@ module.exports = class Game {
 
   // Sets up the game (prompts user for # of players)
   setup(){
+    clear()
     if (!this.numberOfHumanPlayers){
       this.numberOfHumanPlayers = this.promptForNumber("How many human players?");
       this.report('okay', this.numberOfHumanPlayers+' human players.')
@@ -89,6 +90,8 @@ module.exports = class Game {
   start(){
     var playAgain
     while(true){
+      clear()
+
       this.round = new Round({
         game: this,
         index: this.roundIndex++,
@@ -102,3 +105,7 @@ module.exports = class Game {
     }
   }
 };
+
+function clear(){
+  process.stdout.write('\033c'); // clear the screen
+}

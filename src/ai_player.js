@@ -5,8 +5,9 @@ module.exports = class AiPlayer {
     this.bank = 100; // dollars
   }
 
-  requestBet(hand, min, max){
-    return min; // dollars
+  requestBet(min, max){
+    var bet = Math.round(max / 2)
+    return bet < min ? min : bet
   }
 
   yourAction(hand){

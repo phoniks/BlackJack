@@ -1,3 +1,4 @@
+const colors = require('colors')
 const Hand = require('./hand')
 const Card = require('./card')
 const formatAsMoney = require('./format_as_money')
@@ -20,6 +21,7 @@ class Round {
     this.reportTableStatus()
     this.playersTakeActions()
     this.calculateEndgame()
+    this.reportPlayerStatus()
     this.cleanup()
   }
 
@@ -54,11 +56,10 @@ class Round {
     this.game.players.forEach( player => {
       if (player === this.game.dealer) return;
       var min = this.game.minBet
-      var max = player.bank < this.game.maxBet ? player.bank : this.maxBet;
-      if (max < min) return
+      var max = player.bank < this.game.maxBet ? player.bank : this.game.maxBet;
+      if (max < min) { return }
       var bet = player.requestBet(min, max);
-      if (!bet || bet < min || bet > max) return;
-
+      if (!bet || bet < min || bet > max) { return };
       var hand = new Hand({
         game: this.game,
         player: player,
@@ -68,6 +69,12 @@ class Round {
       hand.dealersHand = this.dealersHand
       this.hands.push(hand);
     })
+
+    if (this.hands.length===0){
+      console.log(colors.red('The house just won: ')+colors.green(formatAsMoney(this.game.dealer.winnings)))
+      console.log(colors.red('No players have enough bank to play. Get out!'));
+      process.exit()
+    }
 
     this.hands.push(this.dealersHand);
   }
@@ -126,7 +133,7 @@ class Round {
           this.hands.push(newHand) // TODO inject in order
           this.game.dealer.dealCardToHand(hand);
           this.game.dealer.dealCardToHand(newHand);
-          hand.report('split their hand into '+hand+' '+newHand)
+          hand.report('split their hand into '+hand.toPublicString()+' '+newHand.toPublicString())
         }else if (action === 'insurance'){
           // TODO ask for side bet up to half of hand.bet
           hand.insurance = Math.round(hand.bet/2)
@@ -157,6 +164,7 @@ class Round {
     })
     endGame.winningHands.forEach(hand => {
       hand.report('won! '+formatAsMoney(hand.bet)+' with '+hand.toPrivateString())
+      hand.player.bank += hand.bet
       var winnings = hand.isNaturalBlackjack() ? (hand.bet * 1.5) : hand.bet
       hand.player.bank += winnings
       this.game.dealer.winnings -= winnings
